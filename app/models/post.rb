@@ -9,4 +9,4 @@ class Post < ApplicationRecord
       draft: "draft",
       published: "published"
     }
-  end
+end

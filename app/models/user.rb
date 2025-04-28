@@ -6,4 +6,4 @@ class User < ApplicationRecord
     has_many :post_templates, dependent: :destroy
 
     validates :email, uniqueness: true
-  end
+end

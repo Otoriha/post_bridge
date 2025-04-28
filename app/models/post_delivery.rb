@@ -10,4 +10,4 @@ class PostDelivery < ApplicationRecord
       completed: "completed",
       failed: "failed"
     }
-  end
+end

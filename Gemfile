@@ -59,5 +59,4 @@ end
 gem "tailwindcss-rails"
 gem "tailwindcss-ruby", "3.4.17"
 
-gem 'bcrypt', '~> 3.1.7'
-
+gem "bcrypt", "~> 3.1.7"
