@@ -60,3 +60,10 @@ gem "tailwindcss-rails"
 gem "tailwindcss-ruby", "3.4.17"
 
 gem "bcrypt", "~> 3.1.7"
+
+gem "omniauth"
+gem "omniauth-rails_csrf_protection" # CSRF対策
+gem "omniauth-github"
+gem "omniauth-twitter2"
+gem "octokit", "~> 6.1"
+gem "twitter"
