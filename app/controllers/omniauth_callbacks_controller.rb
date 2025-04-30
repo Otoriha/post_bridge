@@ -1,7 +1,7 @@
 class OmniauthCallbacksController < ApplicationController
   def callback
     # OmniAuthからの認証情報を取得
-    auth = request.env['omniauth.auth']
+    auth = request.env["omniauth.auth"]
 
     # 既存の認証情報を検索
     authentication = Authentication.find_by(provider: auth.provider, uid: auth.uid)

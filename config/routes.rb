@@ -18,7 +18,7 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
   # Defines the root path route ("/")
-  root "posts#index"
+  root "dashboard#index"
 
   get "login" => "sessions#new", as: :login
   delete "logout" => "sessions#destroy", as: :logout
@@ -27,4 +27,7 @@ Rails.application.routes.draw do
   get "auth/failure" => "omniauth_callbacks#failure"
 
   get "dashboard" => "dashboard#index", as: :dashboard
+
+  # 投稿関連のルーティングを追加
+  resources :posts
 end
