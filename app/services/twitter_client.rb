@@ -7,8 +7,8 @@ class TwitterClient
 
     def client
       @client ||= Twitter::REST::Client.new do |config|
-        config.consumer_key        = ENV['TWITTER_CLIENT_ID']
-        config.consumer_secret     = ENV['TWITTER_CLIENT_SECRET']
+        config.consumer_key        = ENV["TWITTER_CLIENT_ID"]
+        config.consumer_secret     = ENV["TWITTER_CLIENT_SECRET"]
         config.access_token        = authentication.access_token
         config.access_token_secret = extract_token_secret
       end
@@ -21,8 +21,8 @@ class TwitterClient
     private
 
     def extract_token_secret
-      if authentication.info && authentication.info['credentials']
-        authentication.info['credentials']['token_secret']
+      if authentication.info && authentication.info["credentials"]
+        authentication.info["credentials"]["token_secret"]
       end
   end
 end

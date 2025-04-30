@@ -67,3 +67,4 @@ gem "omniauth-github"
 gem "omniauth-twitter2"
 gem "octokit", "~> 6.1"
 gem "twitter"
+gem "dotenv-rails", group: %i[ development test ]
