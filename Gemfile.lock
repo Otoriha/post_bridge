@@ -245,7 +245,7 @@ GEM
     psych (5.2.3)
       date
       stringio
-    public_suffix (6.0.1)
+    public_suffix (6.0.2)
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -367,7 +367,7 @@ GEM
     turbo-rails (2.0.13)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
-    twitter (8.1.0)
+    twitter (8.2.0)
       addressable (~> 2.8)
       buftok (~> 0.3.0)
       equalizer (~> 0.0.11)
