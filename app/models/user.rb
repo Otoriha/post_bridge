@@ -4,6 +4,4 @@ class User < ApplicationRecord
     has_many :authentications, dependent: :destroy
     has_many :posts, dependent: :destroy
     has_many :post_templates, dependent: :destroy
-
-    validates :email, uniqueness: true
 end
