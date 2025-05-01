@@ -1,37 +1,10 @@
 class OmniauthCallbacksController < ApplicationController
   def callback
-    # OmniAuthからの認証情報を取得
     auth = request.env["omniauth.auth"]
-
-    # 既存の認証情報を検索
     authentication = Authentication.find_by(provider: auth.provider, uid: auth.uid)
 
-    if authentication
-      # 既存の認証情報があれば、そのユーザーでログイン
-      session[:user_id] = authentication.user_id
-      update_authentication(authentication, auth)
-      redirect_to dashboard_path, notice: "#{auth.provider.capitalize}でログインしました"
-    else
-      # 認証情報がなければ、ユーザーを検索または作成
-      if current_user
-        # ログイン済みの場合は、現在のユーザーに認証情報を追加
-        create_authentication(current_user, auth)
-        redirect_to dashboard_path, notice: "#{auth.provider.capitalize}のアカウントを接続しました"
-      else
-        # ログインしていない場合は、メールアドレスでユーザーを検索
-        user = User.find_by(email: auth.info.email) if auth.info.email
-
-        unless user
-          # ユーザーが存在しなければ作成
-          user = create_user_from_auth(auth)
-        end
-
-        # 認証情報を追加してログイン
-        create_authentication(user, auth)
-        session[:user_id] = user.id
-        redirect_to dashboard_path, notice: "#{auth.provider.capitalize}でログインしました"
-      end
-    end
+    # この認証プロセスを処理するメソッドを呼び出す
+    process_authentication(authentication, auth)
   end
 
   def failure
@@ -40,10 +13,71 @@ class OmniauthCallbacksController < ApplicationController
 
   private
 
+  def process_authentication(authentication, auth)
+    if current_user
+      # ユーザーが既にログイン済み - アカウント連携のケース
+      handle_logged_in_user(authentication, auth)
+    else
+      # ユーザーがログインしていない - ログインまたは新規登録のケース
+      handle_non_logged_in_user(authentication, auth)
+    end
+  end
+
+  def handle_logged_in_user(authentication, auth)
+    if authentication
+      # 既存の認証情報がある場合
+      if authentication.user == current_user
+        # 自分自身のアカウントを更新
+        update_authentication(authentication, auth)
+        redirect_to dashboard_path, notice: "#{provider_name(auth)}の接続情報を更新しました。"
+      else
+        # 他のユーザーのアカウントとの衝突
+        redirect_to dashboard_path, alert: "この#{provider_name(auth)}アカウントは既に他のユーザーに連携されています。"
+      end
+    else
+      # 新規の認証情報
+      begin
+        create_authentication(current_user, auth)
+        redirect_to dashboard_path, notice: "#{provider_name(auth)}のアカウントを接続しました。"
+      rescue => e
+        Rails.logger.error "認証情報の作成中にエラーが発生しました: #{e.message}"
+        redirect_to dashboard_path, alert: "#{provider_name(auth)}アカウントの接続に失敗しました。"
+      end
+    end
+  end
+
+  def handle_non_logged_in_user(authentication, auth)
+    if authentication
+      # 既存の認証情報でログイン
+      log_in_with_authentication(authentication, auth)
+    else
+      # 新規ユーザー登録とログイン
+      register_and_login_user(auth)
+    end
+  end
+
+  def log_in_with_authentication(authentication, auth)
+    session[:user_id] = authentication.user_id
+    update_authentication(authentication, auth)
+    redirect_to dashboard_path, notice: "#{provider_name(auth)}でログインしました。"
+  end
+
+  def register_and_login_user(auth)
+    ActiveRecord::Base.transaction do
+      # トランザクション内でユーザー作成と認証情報作成を行う
+      user = create_user_from_auth(auth)
+      authentication = create_authentication(user, auth)
+      session[:user_id] = user.id
+    end
+    redirect_to dashboard_path, notice: "#{provider_name(auth)}でアカウントを作成しました。"
+  rescue => e
+    Rails.logger.error "新規ユーザー登録中にエラーが発生しました: #{e.message}"
+    redirect_to login_path, alert: "ログイン処理中にエラーが発生しました。"
+  end
+
   def create_user_from_auth(auth)
-    # 認証情報からユーザーを作成
-    name = auth.info.name || auth.info.nickname
-    email = auth.info.email
+    name = auth.info.name || auth.info.nickname || "ユーザー#{Time.now.to_i}"
+    email = auth.info.email || "#{auth.uid}@#{auth.provider}.example.com"
 
     User.create!(
       name: name,
@@ -52,7 +86,6 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def create_authentication(user, auth)
-    # トークン情報を保存
     user.authentications.create!(
       provider: auth.provider,
       uid: auth.uid,
@@ -64,12 +97,15 @@ class OmniauthCallbacksController < ApplicationController
   end
 
   def update_authentication(authentication, auth)
-    # トークン情報を更新
-    authentication.update(
+    authentication.update!(
       access_token: auth.credentials.token,
       refresh_token: auth.credentials.refresh_token,
       expires_at: auth.credentials.expires_at ? Time.at(auth.credentials.expires_at) : nil,
       info: auth.to_hash
     )
+  end
+
+  def provider_name(auth)
+    auth.provider.capitalize
   end
 end
