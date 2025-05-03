@@ -79,7 +79,7 @@
             <div class="flex items-center mt-2 text-sm text-gray-500">
               <span class="mr-4"><%= l post.created_at, format: :short %></span>
               <span class="px-2 py-1 rounded <%= post.published? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-                <%= post.status %>
+                <%= post.published? ? "公開" : "下書き" %>
               </span>
             </div>
             <div class="mt-4 flex justify-end space-x-2">

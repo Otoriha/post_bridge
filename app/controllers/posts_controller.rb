@@ -1,6 +1,6 @@
 class PostsController < ApplicationController
   before_action :require_login
-  before_action :set_post, only: [:edit, :update]
+  before_action :set_post, only: [ :edit, :update ]
 
   def new
     @post = current_user.posts.build
@@ -9,15 +9,15 @@ class PostsController < ApplicationController
 
   def create
     @post = current_user.posts.build(post_params)
-    @post.status = params[:publish_button].present? ? "published" : "draft"
+    @post.status = params[:publish].present? ? "published" : "draft"
 
     if @post.save
       # 公開する場合は連携サービスへの投稿処理を行う
       if @post.published?
         create_post_deliveries
-        redirect_to dashboard_path, notice: '投稿が公開されました'
+        redirect_to dashboard_path, notice: "投稿が公開されました"
       else
-        redirect_to dashboard_path, notice: '下書きが保存されました'
+        redirect_to dashboard_path, notice: "下書きが保存されました"
       end
     else
       @post_templates = current_user.post_templates
@@ -30,13 +30,14 @@ class PostsController < ApplicationController
   end
 
   def update
+    @post.status = params[:publish].present? ? "published" : "draft"
     if @post.update(post_params)
-      # 連携先へ投稿処理（更新時にも投稿したい場合）
-      if params[:publish] && @post.status == "published"
+
+      if params[:publish].present? && @post.published?
         create_post_deliveries
       end
 
-      redirect_to dashboard_path, notice: '投稿が更新されました'
+      redirect_to dashboard_path, notice: "投稿が更新されました"
     else
       @post_templates = current_user.post_templates
       render :edit
